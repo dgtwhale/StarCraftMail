@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StarCraft Mail - Admin</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Press Start 2P', cursive;
+            background: #000;
+            color: #FFD700;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-image:
+                linear-gradient(45deg, #1a1a1a 25%, transparent 25%),
+                linear-gradient(-45deg, #1a1a1a 25%, transparent 25%),
+                linear-gradient(45deg, transparent 75%, #1a1a1a 75%),
+                linear-gradient(-45deg, transparent 75%, #1a1a1a 75%);
+            background-size: 20px 20px;
+            background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+            padding: 20px;
+        }
+
+        .scan-lines {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            background: repeating-linear-gradient(
+                0deg,
+                rgba(0, 0, 0, 0.15),
+                rgba(0, 0, 0, 0.15) 1px,
+                transparent 1px,
+                transparent 2px
+            );
+            animation: flicker 0.15s infinite;
+            z-index: 999;
+        }
+
+        @keyframes flicker {
+            0% { opacity: 0.95; }
+            50% { opacity: 1; }
+            100% { opacity: 0.95; }
+        }
+
+        .container {
+            max-width: 500px;
+            width: 100%;
+            position: relative;
+            z-index: 1;
+        }
+
+        .terminal {
+            border: 4px solid #FF4444;
+            background: #000;
+            box-shadow:
+                0 0 20px rgba(255, 68, 68, 0.5),
+                inset 0 0 20px rgba(255, 68, 68, 0.1);
+            padding: 20px;
+            position: relative;
+        }
+
+        .terminal::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg,
+                transparent,
+                #FF4444,
+                #FF0000,
+                #FF4444,
+                transparent);
+            box-shadow: 0 0 10px rgba(255, 68, 68, 0.7);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #FF4444;
+            padding-bottom: 15px;
+        }
+
+        .logo {
+            font-size: 14px;
+            letter-spacing: 2px;
+            text-shadow: 0 0 10px #FF4444;
+            margin-bottom: 10px;
+            color: #FF4444;
+        }
+
+        .tagline {
+            font-size: 8px;
+            color: #FF8888;
+            letter-spacing: 1px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .label {
+            display: block;
+            font-size: 10px;
+            margin-bottom: 8px;
+            color: #FF8888;
+            letter-spacing: 1px;
+            text-shadow: 0 0 5px rgba(255, 68, 68, 0.7);
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            background: #1a0000;
+            border: 2px solid #FF4444;
+            color: #FF4444;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 10px;
+            box-shadow: inset 0 0 10px rgba(255, 68, 68, 0.2);
+            transition: all 0.3s;
+        }
+
+        input:focus {
+            outline: none;
+            box-shadow:
+                inset 0 0 10px rgba(255, 68, 68, 0.5),
+                0 0 20px rgba(255, 68, 68, 0.7);
+            border-color: #FF0000;
+        }
+
+        input::placeholder {
+            color: #664444;
+        }
+
+        .button {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(180deg, #FF4444, #FF0000);
+            border: 3px solid #FF4444;
+            color: #000;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            box-shadow:
+                0 4px 0 #880000,
+                0 0 15px rgba(255, 68, 68, 0.5);
+            position: relative;
+            top: 0;
+        }
+
+        .button:hover:not(:disabled) {
+            top: -2px;
+            box-shadow:
+                0 6px 0 #880000,
+                0 0 20px rgba(255, 68, 68, 0.8);
+            background: linear-gradient(180deg, #FF6666, #FF4444);
+        }
+
+        .button:active:not(:disabled) {
+            top: 2px;
+            box-shadow:
+                0 2px 0 #880000,
+                0 0 10px rgba(255, 68, 68, 0.3);
+        }
+
+        .button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .alert {
+            padding: 12px;
+            margin-bottom: 15px;
+            border: 2px solid;
+            font-size: 8px;
+            line-height: 1.5;
+            animation: pulse 0.5s;
+        }
+
+        .alert-error {
+            background: #1a0000;
+            border-color: #FF0000;
+            color: #FF4444;
+            box-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(0.95); opacity: 0; }
+            50% { opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 8px;
+            color: #666;
+            letter-spacing: 1px;
+        }
+
+        .back-link {
+            text-align: center;
+            margin-top: 15px;
+            font-size: 8px;
+        }
+
+        .back-link a {
+            color: #FF4444;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+
+        .back-link a:hover {
+            color: #FF8888;
+            text-shadow: 0 0 10px #FF4444;
+        }
+    </style>
+</head>
+<body>
+    <div class="scan-lines"></div>
+
+    <div class="container">
+        <div class="terminal">
+            <div class="header">
+                <div class="logo">⚠️ ADMIN CONSOLE ⚠️</div>
+                <div class="tagline">RESTRICTED ACCESS PROTOCOL</div>
+            </div>
+
+            <div id="alerts"></div>
+
+            <form id="loginForm">
+                <div class="form-group">
+                    <label class="label">ADMIN PASSWORD:</label>
+                    <input type="password" id="password" name="password"
+                           placeholder="enter_password" required autofocus>
+                </div>
+
+                <button type="submit" class="button" id="submitBtn">🔓 AUTHENTICATE</button>
+            </form>
+
+            <div class="back-link">
+                <a href="/">◀ BACK TO REGISTRATION</a>
+            </div>
+
+            <div class="footer">
+                TERRAN ENCRYPTION ENABLED
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const password = document.getElementById('password').value;
+            const btn = document.getElementById('submitBtn');
+
+            btn.disabled = true;
+            btn.textContent = '⏳ AUTHENTICATING...';
+
+            try {
+                const response = await fetch('/admin/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showAlert('ACCESS GRANTED', 'success');
+                    setTimeout(() => {
+                        window.location.href = '/admin';
+                    }, 1000);
+                } else {
+                    showAlert(`ACCESS DENIED: ${data.error}`, 'error');
+                    document.getElementById('password').value = '';
+                }
+            } catch (error) {
+                showAlert(`ERROR: ${error.message}`, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '🔓 AUTHENTICATE';
+            }
+        });
+
+        function showAlert(message, type) {
+            const alerts = document.getElementById('alerts');
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type}`;
+            alert.textContent = message;
+            alerts.appendChild(alert);
+
+            if (type === 'error') {
+                setTimeout(() => {
+                    alert.remove();
+                }, 4000);
+            }
+        }
+    </script>
+</body>
+</html>

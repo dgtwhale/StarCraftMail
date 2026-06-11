@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StarCraft Mail - Admin Panel</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Press Start 2P', cursive;
+            background: #000;
+            color: #FFD700;
+            min-height: 100vh;
+            background-image:
+                linear-gradient(45deg, #1a1a1a 25%, transparent 25%),
+                linear-gradient(-45deg, #1a1a1a 25%, transparent 25%),
+                linear-gradient(45deg, transparent 75%, #1a1a1a 75%),
+                linear-gradient(-45deg, transparent 75%, #1a1a1a 75%);
+            background-size: 20px 20px;
+            background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+            padding: 20px;
+        }
+
+        .scan-lines {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            background: repeating-linear-gradient(
+                0deg,
+                rgba(0, 0, 0, 0.15),
+                rgba(0, 0, 0, 0.15) 1px,
+                transparent 1px,
+                transparent 2px
+            );
+            animation: flicker 0.15s infinite;
+            z-index: 999;
+        }
+
+        @keyframes flicker {
+            0% { opacity: 0.95; }
+            50% { opacity: 1; }
+            100% { opacity: 0.95; }
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header {
+            background: #000;
+            border: 4px solid #FFD700;
+            padding: 20px;
+            margin-bottom: 20px;
+            text-align: center;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+        }
+
+        .header h1 {
+            font-size: 24px;
+            text-shadow: 0 0 10px #FFD700;
+            margin-bottom: 10px;
+        }
+
+        .logout-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 8px 12px;
+            background: #FF4444;
+            border: 2px solid #FF4444;
+            color: #000;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 8px;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(255, 68, 68, 0.5);
+        }
+
+        .logout-btn:hover {
+            box-shadow: 0 0 15px rgba(255, 68, 68, 0.8);
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 900px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .panel {
+            border: 3px solid #FFD700;
+            background: #000;
+            padding: 15px;
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
+        }
+
+        .panel h2 {
+            font-size: 12px;
+            margin-bottom: 15px;
+            color: #FFA500;
+            text-shadow: 0 0 5px rgba(255, 165, 0, 0.7);
+            padding-bottom: 10px;
+            border-bottom: 2px solid #FFD700;
+        }
+
+        .mailbox-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .mailbox-item {
+            background: #001a00;
+            border: 2px solid #FFD700;
+            padding: 10px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 8px;
+            box-shadow: 0 0 5px rgba(255, 215, 0, 0.2);
+        }
+
+        .mailbox-email {
+            flex: 1;
+            color: #00FF00;
+        }
+
+        .mailbox-actions {
+            display: flex;
+            gap: 5px;
+        }
+
+        .btn-small {
+            padding: 4px 8px;
+            background: #FFD700;
+            border: 1px solid #FFD700;
+            color: #000;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 7px;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 2px 0 #665a00;
+        }
+
+        .btn-small:hover {
+            box-shadow: 0 3px 0 #665a00;
+        }
+
+        .btn-small:active {
+            box-shadow: 0 1px 0 #665a00;
+        }
+
+        .btn-danger {
+            background: #FF4444;
+            border-color: #FF4444;
+        }
+
+        .logs {
+            background: #001a00;
+            border: 2px solid #FFD700;
+            color: #00FF00;
+            padding: 10px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-size: 7px;
+            line-height: 1.4;
+            box-shadow: inset 0 0 10px rgba(0, 255, 0, 0.1);
+        }
+
+        .log-line {
+            margin-bottom: 3px;
+        }
+
+        .alert {
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 2px solid;
+            font-size: 8px;
+            animation: pulse 0.5s;
+        }
+
+        .alert-success {
+            background: #001a00;
+            border-color: #00FF00;
+            color: #00FF00;
+        }
+
+        .alert-error {
+            background: #1a0000;
+            border-color: #FF0000;
+            color: #FF4444;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(0.95); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .loading {
+            color: #FFA500;
+            font-size: 8px;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .stat-box {
+            background: #001a00;
+            border: 2px solid #FFD700;
+            padding: 10px;
+            text-align: center;
+            font-size: 10px;
+        }
+
+        .stat-number {
+            color: #FFA500;
+            font-size: 16px;
+            margin: 5px 0;
+        }
+
+        .stat-label {
+            color: #FFD700;
+            font-size: 7px;
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #001a00;
+            border: 1px solid #FFD700;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #FFD700;
+            border: 1px solid #FFA500;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #FFA500;
+        }
+    </style>
+</head>
+<body>
+    <div class="scan-lines"></div>
+
+    <div class="container">
+        <div class="header">
+            <button class="logout-btn" onclick="logout()">🚪 LOGOUT</button>
+            <h1>⚡ ADMIN COMMAND CENTER ⚡</h1>
+            <div style="font-size: 10px; color: #FFA500;">STARCRAFT MAIL MANAGEMENT</div>
+        </div>
+
+        <div id="alerts"></div>
+
+        <div class="grid">
+            <!-- Statistics -->
+            <div class="panel">
+                <h2>📊 STATISTICS</h2>
+                <div class="stats">
+                    <div class="stat-box">
+                        <div class="stat-label">TOTAL MAILBOXES</div>
+                        <div class="stat-number" id="totalMailboxes">0</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">ACTIVE USERS</div>
+                        <div class="stat-number" id="activeUsers">0</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="panel">
+                <h2>⚙️ ACTIONS</h2>
+                <button style="width: 100%; padding: 8px; margin-bottom: 10px; background: #FFD700; border: 2px solid #FFD700; color: #000; font-family: 'Press Start 2P', cursive; font-size: 8px; cursor: pointer; box-shadow: 0 2px 0 #665a00;" onclick="refreshMailboxes()">🔄 REFRESH LIST</button>
+                <button style="width: 100%; padding: 8px; background: #FFD700; border: 2px solid #FFD700; color: #000; font-family: 'Press Start 2P', cursive; font-size: 8px; cursor: pointer; box-shadow: 0 2px 0 #665a00;" onclick="refreshLogs()">📜 REFRESH LOGS</button>
+            </div>
+        </div>
+
+        <div class="grid">
+            <!-- Mailboxes List -->
+            <div class="panel">
+                <h2>📧 MAILBOXES</h2>
+                <div id="mailboxList" class="mailbox-list">
+                    <div class="loading">⏳ LOADING...</div>
+                </div>
+            </div>
+
+            <!-- System Logs -->
+            <div class="panel">
+                <h2>📋 SYSTEM LOGS</h2>
+                <div id="logs" class="logs">
+                    <div class="log-line">⏳ LOADING LOGS...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = '/api/admin';
+
+        async function loadMailboxes() {
+            try {
+                const response = await fetch(`${API_URL}/mailboxes`);
+                const data = await response.json();
+
+                const list = document.getElementById('mailboxList');
+                document.getElementById('totalMailboxes').textContent = data.count;
+                document.getElementById('activeUsers').textContent = data.count;
+
+                if (data.count === 0) {
+                    list.innerHTML = '<div class="loading">NO MAILBOXES</div>';
+                    return;
+                }
+
+                list.innerHTML = data.mailboxes.map(box => {
+                    const username = box.email.split('@')[0];
+                    return `
+                        <div class="mailbox-item">
+                            <div class="mailbox-email">📧 ${box.email}</div>
+                            <div class="mailbox-actions">
+                                <button class="btn-small" onclick="changePassword('${username}')">🔐</button>
+                                <button class="btn-small btn-danger" onclick="deleteMailbox('${username}')">🗑️</button>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            } catch (error) {
+                showAlert(`ERROR: ${error.message}`, 'error');
+            }
+        }
+
+        async function loadLogs() {
+            try {
+                const response = await fetch(`${API_URL}/logs?lines=30`);
+                const data = await response.json();
+
+                const logs = document.getElementById('logs');
+                logs.innerHTML = data.logs.map(log =>
+                    `<div class="log-line">${log}</div>`
+                ).join('') || '<div class="log-line">NO LOGS</div>';
+            } catch (error) {
+                showAlert(`ERROR LOADING LOGS: ${error.message}`, 'error');
+            }
+        }
+
+        async function changePassword(username) {
+            const password = prompt(`NEW PASSWORD FOR ${username}:`);
+            if (!password) return;
+
+            try {
+                const response = await fetch(`${API_URL}/mailboxes/${username}/password`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showAlert(`PASSWORD UPDATED FOR ${data.email}`, 'success');
+                } else {
+                    showAlert(`ERROR: ${data.error}`, 'error');
+                }
+            } catch (error) {
+                showAlert(`ERROR: ${error.message}`, 'error');
+            }
+        }
+
+        async function deleteMailbox(username) {
+            const email = `${username}@dgtlwhale.com`;
+            if (!confirm(`DELETE MAILBOX ${email}?\nTHIS IS PERMANENT!`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/mailboxes/${username}`, {
+                    method: 'DELETE'
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showAlert(`MAILBOX DELETED: ${data.email}`, 'success');
+                    loadMailboxes();
+                } else {
+                    showAlert(`ERROR: ${data.error}`, 'error');
+                }
+            } catch (error) {
+                showAlert(`ERROR: ${error.message}`, 'error');
+            }
+        }
+
+        function refreshMailboxes() {
+            loadMailboxes();
+            showAlert('MAILBOX LIST REFRESHED', 'success');
+        }
+
+        function refreshLogs() {
+            loadLogs();
+            showAlert('LOGS REFRESHED', 'success');
+        }
+
+        function showAlert(message, type) {
+            const alerts = document.getElementById('alerts');
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type}`;
+            alert.textContent = message;
+            alerts.appendChild(alert);
+
+            setTimeout(() => {
+                alert.remove();
+            }, 5000);
+        }
+
+        function logout() {
+            if (confirm('LOGOUT FROM ADMIN PANEL?')) {
+                window.location.href = '/admin/logout';
+            }
+        }
+
+        // Загрузить при загрузке страницы
+        document.addEventListener('DOMContentLoaded', () => {
+            loadMailboxes();
+            loadLogs();
+
+            // Автообновление логов каждые 30 сек
+            setInterval(loadLogs, 30000);
+        });
+    </script>
+</body>
+</html>

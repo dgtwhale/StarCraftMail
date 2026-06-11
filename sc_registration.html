@@ -1,0 +1,1073 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StarCraft Mail - Регистрация</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Press Start 2P', cursive;
+            background: #000;
+            color: #FFD700;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-image:
+                linear-gradient(45deg, #1a1a1a 25%, transparent 25%),
+                linear-gradient(-45deg, #1a1a1a 25%, transparent 25%),
+                linear-gradient(45deg, transparent 75%, #1a1a1a 75%),
+                linear-gradient(-45deg, transparent 75%, #1a1a1a 75%);
+            background-size: 20px 20px;
+            background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+            padding: 20px;
+        }
+
+        .scan-lines {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            background: repeating-linear-gradient(
+                0deg,
+                rgba(0, 0, 0, 0.15),
+                rgba(0, 0, 0, 0.15) 1px,
+                transparent 1px,
+                transparent 2px
+            );
+            animation: flicker 0.15s infinite;
+            z-index: 999;
+        }
+
+        @keyframes flicker {
+            0% { opacity: 0.95; }
+            50% { opacity: 1; }
+            100% { opacity: 0.95; }
+        }
+
+        .container {
+            max-width: 600px;
+            width: 100%;
+            position: relative;
+            z-index: 1;
+        }
+
+        .terminal {
+            border: 4px solid #FFD700;
+            background: #000;
+            box-shadow:
+                0 0 20px rgba(255, 215, 0, 0.5),
+                inset 0 0 20px rgba(255, 215, 0, 0.1);
+            padding: 20px;
+            position: relative;
+        }
+
+        .terminal::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg,
+                transparent,
+                #FFD700,
+                #FFA500,
+                #FFD700,
+                transparent);
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.7);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #FFD700;
+            padding-bottom: 15px;
+        }
+
+        .logo {
+            font-size: 16px;
+            letter-spacing: 2px;
+            text-shadow: 0 0 10px #FFD700;
+            margin-bottom: 10px;
+        }
+
+        .tagline {
+            font-size: 8px;
+            color: #FFA500;
+            letter-spacing: 1px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .label {
+            display: block;
+            font-size: 10px;
+            margin-bottom: 8px;
+            color: #FFA500;
+            letter-spacing: 1px;
+            text-shadow: 0 0 5px rgba(255, 165, 0, 0.7);
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            background: #001a00;
+            border: 2px solid #FFD700;
+            color: #FFD700;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 10px;
+            box-shadow: inset 0 0 10px rgba(255, 215, 0, 0.2);
+            transition: all 0.3s;
+        }
+
+        input:focus {
+            outline: none;
+            box-shadow:
+                inset 0 0 10px rgba(255, 215, 0, 0.5),
+                0 0 20px rgba(255, 215, 0, 0.7);
+            border-color: #FFA500;
+        }
+
+        input::placeholder {
+            color: #664d00;
+        }
+
+        .button {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(180deg, #FFD700, #FFA500);
+            border: 3px solid #FFD700;
+            color: #000;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            box-shadow:
+                0 4px 0 #665a00,
+                0 0 15px rgba(255, 215, 0, 0.5);
+            position: relative;
+            top: 0;
+        }
+
+        .button:hover:not(:disabled) {
+            top: -2px;
+            box-shadow:
+                0 6px 0 #665a00,
+                0 0 20px rgba(255, 215, 0, 0.8);
+            background: linear-gradient(180deg, #FFED4E, #FFD700);
+        }
+
+        .button:active:not(:disabled) {
+            top: 2px;
+            box-shadow:
+                0 2px 0 #665a00,
+                0 0 10px rgba(255, 215, 0, 0.3);
+        }
+
+        .button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .info-box {
+            background: #001a00;
+            border: 2px solid #FFD700;
+            padding: 15px;
+            margin-bottom: 20px;
+            font-size: 8px;
+            line-height: 1.6;
+            color: #FFD700;
+            box-shadow: inset 0 0 10px rgba(255, 215, 0, 0.1);
+        }
+
+        .info-header {
+            color: #FFA500;
+            margin-bottom: 8px;
+            letter-spacing: 1px;
+        }
+
+        .info-line {
+            margin-bottom: 4px;
+        }
+
+        .alert {
+            padding: 12px;
+            margin-bottom: 15px;
+            border: 2px solid;
+            font-size: 8px;
+            line-height: 1.5;
+            animation: pulse 0.5s;
+        }
+
+        .alert-success {
+            background: #001a00;
+            border-color: #00FF00;
+            color: #00FF00;
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+        }
+
+        .alert-error {
+            background: #1a0000;
+            border-color: #FF0000;
+            color: #FF0000;
+            box-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(0.95); opacity: 0; }
+            50% { opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 8px;
+            color: #666;
+            letter-spacing: 1px;
+        }
+
+        .admin-link {
+            text-align: center;
+            margin-top: 15px;
+            font-size: 8px;
+        }
+
+        .admin-link a {
+            color: #FFD700;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+
+        .admin-link a:hover {
+            color: #FFA500;
+            text-shadow: 0 0 10px #FFD700;
+        }
+
+        .status {
+            color: #FFA500;
+            font-size: 8px;
+            margin-top: 10px;
+            text-align: center;
+        }
+
+        .game-btn {
+            width: 100%;
+            padding: 10px;
+            background: linear-gradient(180deg, #FF6600, #FF3300);
+            border: 3px solid #FF6600;
+            color: #FFF;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 9px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-bottom: 15px;
+            box-shadow: 0 0 10px rgba(255, 102, 0, 0.5);
+            transition: all 0.2s;
+        }
+
+        .game-btn:hover {
+            box-shadow: 0 0 15px rgba(255, 102, 0, 0.8);
+        }
+
+        .game-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .game-modal.active {
+            display: flex;
+        }
+
+        .game-container {
+            background: #000;
+            border: 4px solid #FFD700;
+            padding: 20px;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+            max-width: 600px;
+        }
+
+        .game-header {
+            text-align: center;
+            margin-bottom: 15px;
+            color: #FFD700;
+            font-size: 12px;
+        }
+
+        .game-info {
+            display: flex;
+            justify-content: space-between;
+            margin: 10px 0;
+            font-size: 8px;
+            color: #FFD700;
+        }
+
+        .game-instructions {
+            font-size: 7px;
+            color: #FFA500;
+            margin: 10px 0;
+            line-height: 1.6;
+        }
+
+        #gameCanvas {
+            background: #000;
+            border: 2px solid #FFD700;
+            display: block;
+            margin: 15px auto;
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+            max-width: 100%;
+            height: auto;
+        }
+
+        @media (max-width: 600px) {
+            .game-container {
+                max-width: 95vw;
+                padding: 10px;
+            }
+
+            .game-header {
+                font-size: 10px;
+            }
+
+            .game-instructions {
+                font-size: 6px;
+                line-height: 1.4;
+            }
+
+            .game-info {
+                font-size: 7px;
+            }
+
+            #gameCanvas {
+                width: 100%;
+                height: 300px;
+                margin: 10px auto;
+            }
+
+            .close-game {
+                padding: 15px;
+                font-size: 10px;
+            }
+        }
+
+        .close-game {
+            width: 100%;
+            padding: 10px;
+            background: #FF4444;
+            border: 2px solid #FF4444;
+            color: #FFF;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 8px;
+            cursor: pointer;
+            margin-top: 15px;
+        }
+
+        .close-game:hover {
+            background: #FF6666;
+        }
+
+        .game-controls {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .game-controls > div {
+            display: flex;
+            gap: 5px;
+            justify-content: center;
+        }
+
+        .control-btn {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(180deg, #FFD700, #FFA500);
+            border: 2px solid #FFD700;
+            color: #000;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: all 0.1s;
+            box-shadow: 0 4px 0 #665a00;
+        }
+
+        .control-btn:active {
+            transform: translateY(3px);
+            box-shadow: 0 1px 0 #665a00;
+        }
+
+        @media (max-width: 600px) {
+            .control-btn {
+                width: 40px;
+                height: 40px;
+                font-size: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="scan-lines"></div>
+
+    <div class="container">
+        <div class="terminal">
+            <div class="header">
+                <div class="logo">⚡ STARCRAFT MAIL ⚡</div>
+                <div class="tagline">TERRAN COMMUNICATIONS NETWORK</div>
+            </div>
+
+            <div id="alerts"></div>
+
+            <div class="info-box">
+                <div class="info-header">▶ REGISTRATION PROTOCOL</div>
+                <div class="info-line">Create your mailbox on {{ domain }}</div>
+                <div class="info-line">IMAP: mail.dgtlwhale.com:993</div>
+                <div class="info-line">SMTP: mail.dgtlwhale.com:25</div>
+            </div>
+
+            <form id="registerForm">
+                <div class="form-group">
+                    <label class="label">USERNAME:</label>
+                    <input type="text" id="username" name="username"
+                           placeholder="enter_username"
+                           minlength="3" maxlength="30" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="label">PASSWORD:</label>
+                    <input type="password" id="password" name="password"
+                           placeholder="enter_password"
+                           minlength="6" maxlength="50" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="label">CONFIRM PASSWORD:</label>
+                    <input type="password" id="confirm" name="confirm"
+                           placeholder="confirm_password" required>
+                </div>
+
+                <button type="submit" class="button" id="submitBtn">📧 CREATE MAILBOX</button>
+            </form>
+
+            <button class="game-btn" onclick="openGame()">🎮 PLAY ZERG vs PROTOSS</button>
+
+            <div style="display: flex; gap: 15px; margin: 15px 0;">
+                <a href="/login" style="flex: 1; text-align: center; padding: 12px; background: linear-gradient(180deg, #00AA00, #006600); border: 3px solid #00AA00; color: #FFF; font-family: 'Press Start 2P', cursive; font-size: 10px; font-weight: bold; cursor: pointer; text-decoration: none; box-shadow: 0 4px 0 #003300, 0 0 15px rgba(0, 170, 0, 0.5); transition: all 0.2s; display: flex; align-items: center; justify-content: center;">🔓 SIGN IN</a>
+            </div>
+
+            <div class="admin-link">
+                <a href="/admin/login">ADMIN PANEL ▶</a>
+            </div>
+
+            <div class="footer">
+                © 2026 STARCRAFT MAIL | POWERED BY TERRAN TECH
+            </div>
+        </div>
+    </div>
+
+    <!-- Game Modal -->
+    <div id="gameModal" class="game-modal">
+        <div class="game-container">
+            <div class="game-header">🎮 ZERG vs PROTOSS PACMAN 🎮</div>
+            <div class="game-info">
+                <span>Score: <span id="gameScore">0</span></span>
+                <span id="gameStatus">Use arrow keys to move</span>
+            </div>
+            <div class="game-instructions">
+                🟢 ZERG = ТЫ | 🟠 PROTOSS = ВРАГ | 🟡 ЮНИТЫ = ЕДЖЕНИЕ<br>
+                Съешь все желтые юниты и избегай оранжевого Протоса! Стрелки или кнопки = движение. Собери всех - ПОБЕДА!
+            </div>
+            <canvas id="gameCanvas" width="500" height="400"></canvas>
+            <div class="game-controls">
+                <button id="btnUp" class="control-btn control-btn-up">▲</button>
+                <div>
+                    <button id="btnLeft" class="control-btn control-btn-left">◀</button>
+                    <button id="btnDown" class="control-btn control-btn-down">▼</button>
+                    <button id="btnRight" class="control-btn control-btn-right">▶</button>
+                </div>
+            </div>
+            <button class="close-game" onclick="closeGame()">✕ CLOSE GAME</button>
+        </div>
+    </div>
+
+    <script>
+        const DOMAIN = '{{ domain }}';
+
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const confirm = document.getElementById('confirm').value;
+
+            if (password !== confirm) {
+                showAlert('PASSWORDS DO NOT MATCH', 'error');
+                return;
+            }
+
+            const btn = document.getElementById('submitBtn');
+            btn.disabled = true;
+            btn.textContent = '⏳ PROCESSING...';
+
+            try {
+                const response = await fetch('/api/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showAlert(`✅ MAILBOX CREATED: ${data.email}`, 'success');
+                    document.getElementById('registerForm').reset();
+                    setTimeout(() => {
+                        showAlert(`CONNECTION DETAILS:\nIMAP: mail.${DOMAIN}:993\nSMTP: mail.${DOMAIN}:25\nUSER: ${data.email}`, 'success');
+                    }, 1000);
+                } else {
+                    showAlert(`ERROR: ${data.error}`, 'error');
+                }
+            } catch (error) {
+                showAlert(`CONNECTION ERROR: ${error.message}`, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '📧 CREATE MAILBOX';
+            }
+        });
+
+        function showAlert(message, type) {
+            const alerts = document.getElementById('alerts');
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type}`;
+            alert.textContent = message;
+            alerts.appendChild(alert);
+
+            setTimeout(() => {
+                alert.remove();
+            }, 6000);
+        }
+
+        // ========== GAME LOGIC ==========
+        let game = null;
+
+        // 8-битные иконки персонажей
+        function drawObstacle(ctx, x, y, size) {
+            ctx.save();
+            ctx.translate(x + size/2, y + size/2);
+
+            // Металлическая стена корабля
+            ctx.fillStyle = '#2A4F6A';
+            ctx.fillRect(-size/2, -size/2, size, size);
+
+            // Окантовка стены
+            ctx.strokeStyle = '#00FFFF';
+            ctx.lineWidth = 1;
+            ctx.strokeRect(-size/2, -size/2, size, size);
+
+            // Детали - панели и линии энергии
+            ctx.strokeStyle = '#00FFFF';
+            ctx.lineWidth = 0.5;
+            ctx.beginPath();
+            ctx.moveTo(-size/2 + 2, -size/2 + 4);
+            ctx.lineTo(size/2 - 2, -size/2 + 4);
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.moveTo(-size/2 + 2, size/2 - 4);
+            ctx.lineTo(size/2 - 2, size/2 - 4);
+            ctx.stroke();
+
+            // Светящиеся точки (энергетические точки)
+            ctx.fillStyle = '#00FF00';
+            ctx.beginPath();
+            ctx.arc(-size/4, 0, 1.5, 0, Math.PI*2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(size/4, 0, 1.5, 0, Math.PI*2);
+            ctx.fill();
+
+            ctx.restore();
+        }
+
+        // 8-битный Зерг - ГИДРАЛИСК
+        function drawZerg(ctx, x, y, size, eating = false) {
+            ctx.save();
+            ctx.fillStyle = '#00FF00';
+            const ss = size / 10;
+
+            // Голова - треугольник
+            ctx.beginPath();
+            ctx.moveTo(x + size/2, y + ss*2);
+            ctx.lineTo(x + size/2 - ss*2, y + ss*4);
+            ctx.lineTo(x + size/2 + ss*2, y + ss*4);
+            ctx.closePath();
+            ctx.fill();
+
+            if (eating) {
+                // Открытая пасть
+                ctx.fillStyle = '#FF0000';
+                ctx.fillRect(x + size/2 - ss*1.5, y + ss*4, ss*3, ss*2);
+            } else {
+                // Закрытая пасть
+                ctx.fillStyle = '#666600';
+                ctx.fillRect(x + size/2 - ss*1.5, y + ss*4, ss*3, ss*0.8);
+            }
+
+            // Тело - шестиугольник
+            ctx.fillStyle = '#00FF00';
+            ctx.fillRect(x + size/2 - ss*2.5, y + ss*5, ss*5, ss*3);
+
+            // Спинные шипы
+            ctx.fillStyle = '#00AA00';
+            ctx.fillRect(x + size/2 - ss*2, y + ss*4.5, ss*0.8, ss*1.5);
+            ctx.fillRect(x + size/2 + ss*1.2, y + ss*4.5, ss*0.8, ss*1.5);
+
+            // Ноги
+            ctx.fillStyle = '#00FF00';
+            ctx.fillRect(x + size/2 - ss*2.8, y + ss*8, ss*0.8, ss*2);
+            ctx.fillRect(x + size/2 + ss*2, y + ss*8, ss*0.8, ss*2);
+
+            ctx.restore();
+        }
+
+        // 8-битный Протос - ЗИЛОТ
+        function drawProtoss(ctx, x, y, size, attacking = false) {
+            ctx.save();
+            const ss = size / 10;
+
+            // Голова - острая
+            ctx.fillStyle = '#FF6600';
+            ctx.beginPath();
+            ctx.moveTo(x + size/2, y + ss*1);
+            ctx.lineTo(x + size/2 - ss*2, y + ss*3);
+            ctx.lineTo(x + size/2 + ss*2, y + ss*3);
+            ctx.closePath();
+            ctx.fill();
+
+            // Энергокристалл в центре
+            ctx.fillStyle = '#FFFF00';
+            ctx.beginPath();
+            ctx.moveTo(x + size/2, y + ss*3);
+            ctx.lineTo(x + size/2 + ss*1.5, y + ss*5);
+            ctx.lineTo(x + size/2, y + ss*6);
+            ctx.lineTo(x + size/2 - ss*1.5, y + ss*5);
+            ctx.closePath();
+            ctx.fill();
+
+            // Тело - прямоугольное
+            ctx.fillStyle = '#FF6600';
+            ctx.fillRect(x + size/2 - ss*2, y + ss*5, ss*4, ss*3);
+
+            // Ноги острые
+            ctx.beginPath();
+            ctx.moveTo(x + size/2 - ss*1.5, y + ss*8);
+            ctx.lineTo(x + size/2 - ss*2.5, y + ss*10);
+            ctx.lineTo(x + size/2 - ss*1, y + ss*9);
+            ctx.closePath();
+            ctx.fill();
+
+            ctx.beginPath();
+            ctx.moveTo(x + size/2 + ss*1.5, y + ss*8);
+            ctx.lineTo(x + size/2 + ss*2.5, y + ss*10);
+            ctx.lineTo(x + size/2 + ss*1, y + ss*9);
+            ctx.closePath();
+            ctx.fill();
+
+            if (attacking) {
+                // ПЛАЗМЕННЫЙ ЛУЧ В ДЕЙСТВИИ
+                ctx.strokeStyle = '#FF00FF';
+                ctx.lineWidth = ss*1.2;
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+                ctx.beginPath();
+                ctx.moveTo(x + size/2 + ss*2, y + ss*4);
+                ctx.lineTo(x + size/2 + ss*5, y + ss);
+                ctx.stroke();
+
+                // Свечение
+                ctx.strokeStyle = 'rgba(255, 0, 255, 0.6)';
+                ctx.lineWidth = ss*2.5;
+                ctx.beginPath();
+                ctx.moveTo(x + size/2 + ss*2, y + ss*4);
+                ctx.lineTo(x + size/2 + ss*5, y + ss);
+                ctx.stroke();
+
+                // Второй луч
+                ctx.strokeStyle = '#FF00FF';
+                ctx.lineWidth = ss*0.8;
+                ctx.beginPath();
+                ctx.moveTo(x + size/2 + ss*2, y + ss*5);
+                ctx.lineTo(x + size/2 + ss*5.5, y + ss*2);
+                ctx.stroke();
+            } else {
+                // Меч в покое
+                ctx.strokeStyle = '#FF0000';
+                ctx.lineWidth = ss*1;
+                ctx.beginPath();
+                ctx.moveTo(x + size/2 + ss*2, y + ss*5);
+                ctx.lineTo(x + size/2 + ss*4, y + ss*3);
+                ctx.stroke();
+            }
+
+            ctx.restore();
+        }
+
+        // 8-битный Терран МАРИН - боевой юнит
+        function drawTerran(ctx, x, y, size) {
+            ctx.save();
+            const ss = size / 10;
+
+            // Шлем с окошком
+            ctx.fillStyle = '#FFFF00';
+            ctx.fillRect(x + size/2 - ss*1.5, y + ss*1, ss*3, ss*2);
+
+            ctx.fillStyle = '#0088FF';
+            ctx.fillRect(x + size/2 - ss*1, y + ss*1.2, ss*2, ss*1.2);
+
+            // Туловище в броне
+            ctx.fillStyle = '#FFFF00';
+            ctx.fillRect(x + size/2 - ss*1.8, y + ss*3, ss*3.6, ss*3.5);
+
+            // Линии брони
+            ctx.strokeStyle = '#FF8800';
+            ctx.lineWidth = ss*0.4;
+            ctx.beginPath();
+            ctx.moveTo(x + size/2 - ss*1.8, y + ss*4.5);
+            ctx.lineTo(x + size/2 + ss*1.8, y + ss*4.5);
+            ctx.stroke();
+
+            // Плечи - броня
+            ctx.fillStyle = '#FFFF00';
+            ctx.fillRect(x + size/2 - ss*2.5, y + ss*3.2, ss*1.2, ss*2);
+            ctx.fillRect(x + size/2 + ss*1.3, y + ss*3.2, ss*1.2, ss*2);
+
+            // Ноги - стройные
+            ctx.fillStyle = '#FFFF00';
+            ctx.fillRect(x + size/2 - ss*1.2, y + ss*6.5, ss*0.8, ss*3);
+            ctx.fillRect(x + size/2 + ss*0.4, y + ss*6.5, ss*0.8, ss*3);
+
+            // Сапоги
+            ctx.fillStyle = '#440000';
+            ctx.fillRect(x + size/2 - ss*1.2, y + ss*9.4, ss*0.8, ss*0.6);
+            ctx.fillRect(x + size/2 + ss*0.4, y + ss*9.4, ss*0.8, ss*0.6);
+
+            // Оружие - плазма винтовка
+            ctx.strokeStyle = '#00FF00';
+            ctx.lineWidth = ss*0.7;
+            ctx.beginPath();
+            ctx.moveTo(x + size/2 + ss*1.3, y + ss*4);
+            ctx.lineTo(x + size/2 + ss*3.5, y + ss*2.5);
+            ctx.stroke();
+
+            // Дуло светится
+            ctx.fillStyle = '#00FF00';
+            ctx.fillRect(x + size/2 + ss*3.3, y + ss*2.2, ss*0.7, ss*0.5);
+
+            ctx.restore();
+        }
+
+        class PacmanGame {
+            constructor(canvas) {
+                this.canvas = canvas;
+                this.ctx = canvas.getContext('2d');
+
+                const maxWidth = Math.min(400, window.innerWidth - 60);
+                const maxHeight = 300;
+                canvas.width = maxWidth;
+                canvas.height = maxHeight;
+
+                this.cols = 12;
+                this.rows = 10;
+                this.gridSize = Math.floor(canvas.width / this.cols);
+
+                this.zerg = { x: 1, y: 1, dx: 0, dy: 0, nextDx: 0, nextDy: 0, moveCounter: 0 };
+                this.protoss = { x: this.cols - 2, y: this.rows - 2, dx: 0, dy: 0, moveCounter: 0 };
+                this.pellets = [];
+                this.obstacles = [];
+                this.score = 0;
+                this.gameOver = false;
+                this.won = false;
+                this.zergEatingTime = 0;
+                this.protossAttackingTime = 0;
+
+                this.generateObstacles();
+                this.generatePellets();
+                this.setupControls();
+                this.gameLoop();
+            }
+
+            generateObstacles() {
+                // Стены корабля - создаем лабиринт
+                const walls = [
+                    // Верхние и нижние стены
+                    ...Array.from({length: this.cols}, (_, i) => ({x: i, y: 0})),
+                    ...Array.from({length: this.cols}, (_, i) => ({x: i, y: this.rows - 1})),
+                    // Левые и правые стены
+                    ...Array.from({length: this.rows}, (_, i) => ({x: 0, y: i})),
+                    ...Array.from({length: this.rows}, (_, i) => ({x: this.cols - 1, y: i})),
+                    // Внутренние стены - коридоры корабля
+                    {x: 3, y: 3}, {x: 3, y: 4}, {x: 3, y: 5}, {x: 3, y: 6},
+                    {x: 6, y: 2}, {x: 6, y: 3}, {x: 6, y: 4}, {x: 6, y: 5}, {x: 6, y: 6}, {x: 6, y: 7},
+                    {x: 9, y: 3}, {x: 9, y: 4}, {x: 9, y: 5}, {x: 9, y: 6},
+                    {x: 4, y: 8}, {x: 5, y: 8}, {x: 6, y: 8}, {x: 7, y: 8}, {x: 8, y: 8},
+                ];
+
+                this.obstacles = walls.filter(w =>
+                    !(w.x === this.zerg.x && w.y === this.zerg.y) &&
+                    !(w.x === this.protoss.x && w.y === this.protoss.y)
+                );
+            }
+
+            generatePellets() {
+                for (let y = 0; y < this.rows; y++) {
+                    for (let x = 0; x < this.cols; x++) {
+                        if ((x !== this.zerg.x || y !== this.zerg.y) &&
+                            (x !== this.protoss.x || y !== this.protoss.y) &&
+                            Math.random() > 0.7) {
+                            this.pellets.push({ x, y });
+                        }
+                    }
+                }
+            }
+
+            setupControls() {
+                const setIntent = (dx, dy) => {
+                    // Сохранить желаемое направление (система Pacman)
+                    this.zerg.nextDx = dx;
+                    this.zerg.nextDy = dy;
+                };
+
+                document.addEventListener('keydown', (e) => {
+                    switch(e.key) {
+                        case 'ArrowUp':
+                            setIntent(0, -1);
+                            e.preventDefault();
+                            break;
+                        case 'ArrowDown':
+                            setIntent(0, 1);
+                            e.preventDefault();
+                            break;
+                        case 'ArrowLeft':
+                            setIntent(-1, 0);
+                            e.preventDefault();
+                            break;
+                        case 'ArrowRight':
+                            setIntent(1, 0);
+                            e.preventDefault();
+                            break;
+                    }
+                });
+
+                document.getElementById('btnUp')?.addEventListener('click', () => setIntent(0, -1));
+                document.getElementById('btnDown')?.addEventListener('click', () => setIntent(0, 1));
+                document.getElementById('btnLeft')?.addEventListener('click', () => setIntent(-1, 0));
+                document.getElementById('btnRight')?.addEventListener('click', () => setIntent(1, 0));
+            }
+
+            isObstacle(x, y) {
+                return this.obstacles.some(obs => obs.x === x && obs.y === y);
+            }
+
+            update() {
+                if (this.gameOver || this.won) return;
+
+                // Обновляем таймеры анимации
+                if (this.zergEatingTime > 0) {
+                    this.zergEatingTime -= 100;
+                }
+                if (this.protossAttackingTime > 0) {
+                    this.protossAttackingTime -= 100;
+                }
+
+                // Движение Зерга - каждые 200ms (медленнее)
+                this.zerg.moveCounter++;
+                if (this.zerg.moveCounter >= 2) {
+                    this.zerg.moveCounter = 0;
+
+                    // Пытаемся двигаться в желаемом направлении (intent)
+                    if (this.zerg.nextDx !== 0 || this.zerg.nextDy !== 0) {
+                        const tryX = this.zerg.x + this.zerg.nextDx;
+                        const tryY = this.zerg.y + this.zerg.nextDy;
+                        if (!this.isObstacle(tryX, tryY)) {
+                            this.zerg.x = tryX;
+                            this.zerg.y = tryY;
+                            this.zerg.dx = this.zerg.nextDx;
+                            this.zerg.dy = this.zerg.nextDy;
+                        }
+                    } else {
+                        // Продолжаем двигаться в текущем направлении если нет intent
+                        const nextX = this.zerg.x + this.zerg.dx;
+                        const nextY = this.zerg.y + this.zerg.dy;
+                        if (!this.isObstacle(nextX, nextY)) {
+                            this.zerg.x = nextX;
+                            this.zerg.y = nextY;
+                        }
+                    }
+                }
+
+                // Оборачивание за края для Зерга
+                if (this.zerg.x < 0) this.zerg.x = this.cols - 1;
+                if (this.zerg.x >= this.cols) this.zerg.x = 0;
+                if (this.zerg.y < 0) this.zerg.y = this.rows - 1;
+                if (this.zerg.y >= this.rows) this.zerg.y = 0;
+
+                // Проверяем поедание пеллетов
+                this.pellets = this.pellets.filter(p => {
+                    if (p.x === this.zerg.x && p.y === this.zerg.y) {
+                        this.score += 10;
+                        this.zergEatingTime = 200; // 0.2 сек анимация поедания
+                        return false;
+                    }
+                    return true;
+                });
+
+                // AI Протоса - движение каждые 200ms
+                this.protoss.moveCounter++;
+                if (this.protoss.moveCounter >= 2) {
+                    this.protoss.moveCounter = 0;
+
+                    // Расчет расстояния к Зергу
+                    const dx = this.zerg.x - this.protoss.x;
+                    const dy = this.zerg.y - this.protoss.y;
+                    const distX = Math.abs(dx);
+                    const distY = Math.abs(dy);
+
+                    // Выбираем приоритет движения (больший перемещение)
+                    let bestMove = null;
+                    let bestScore = -Infinity;
+
+                    // Проверяем все 4 возможных хода
+                    const moves = [
+                        { dx: 1, dy: 0 },
+                        { dx: -1, dy: 0 },
+                        { dx: 0, dy: 1 },
+                        { dx: 0, dy: -1 }
+                    ];
+
+                    for (let move of moves) {
+                        const nextX = this.protoss.x + move.dx;
+                        const nextY = this.protoss.y + move.dy;
+
+                        if (!this.isObstacle(nextX, nextY)) {
+                            // Оценка хода: приоритет приближению к Зергу
+                            const newDx = this.zerg.x - nextX;
+                            const newDy = this.zerg.y - nextY;
+                            const newDist = Math.abs(newDx) + Math.abs(newDy);
+                            const score = -newDist; // Меньше расстояние = выше оценка
+
+                            if (score > bestScore) {
+                                bestScore = score;
+                                bestMove = move;
+                            }
+                        }
+                    }
+
+                    // Выполняем лучший ход
+                    if (bestMove) {
+                        this.protoss.x += bestMove.dx;
+                        this.protoss.y += bestMove.dy;
+                    }
+                }
+
+                // Оборачивание за края для Протоса
+                if (this.protoss.x < 0) this.protoss.x = this.cols - 1;
+                if (this.protoss.x >= this.cols) this.protoss.x = 0;
+                if (this.protoss.y < 0) this.protoss.y = this.rows - 1;
+                if (this.protoss.y >= this.rows) this.protoss.y = 0;
+
+                // Проверяем игру над
+                if (this.zerg.x === this.protoss.x && this.zerg.y === this.protoss.y) {
+                    this.gameOver = true;
+                    this.protossAttackingTime = 200;
+                    document.getElementById('gameStatus').textContent = '💀 GAME OVER! PROTOSS CAUGHT YOU!';
+                }
+
+                // Проверяем победу
+                if (this.pellets.length === 0) {
+                    this.won = true;
+                    document.getElementById('gameStatus').textContent = `🎉 YOU WON! FINAL SCORE: ${this.score}`;
+                }
+            }
+
+            draw() {
+                this.ctx.fillStyle = '#000';
+                this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
+                // Рисуем препятствия - стены корабля
+                this.obstacles.forEach(obs => {
+                    drawObstacle(this.ctx, obs.x * this.gridSize + 2, obs.y * this.gridSize + 2, this.gridSize - 4);
+                });
+
+                // Рисуем пеллеты - звездочки Терран
+                this.pellets.forEach(p => {
+                    drawTerran(this.ctx, p.x * this.gridSize + 2, p.y * this.gridSize + 2, this.gridSize - 4);
+                });
+
+                // Рисуем Зерга с анимацией поедания
+                const zergEating = this.zergEatingTime > 0;
+                drawZerg(this.ctx, this.zerg.x * this.gridSize + 2, this.zerg.y * this.gridSize + 2, this.gridSize - 4, zergEating);
+
+                // Рисуем Протоса с анимацией атаки
+                const protossAttacking = this.protossAttackingTime > 0;
+                drawProtoss(this.ctx, this.protoss.x * this.gridSize + 2, this.protoss.y * this.gridSize + 2, this.gridSize - 4, protossAttacking);
+
+                document.getElementById('gameScore').textContent = this.score;
+            }
+
+            gameLoop() {
+                this.update();
+                this.draw();
+                if (!this.gameOver && !this.won) {
+                    setTimeout(() => this.gameLoop(), 100);
+                }
+            }
+        }
+
+        function openGame() {
+            const modal = document.getElementById('gameModal');
+            modal.classList.add('active');
+            const canvas = document.getElementById('gameCanvas');
+            game = new PacmanGame(canvas);
+        }
+
+        function closeGame() {
+            const modal = document.getElementById('gameModal');
+            modal.classList.remove('active');
+            game = null;
+        }
+
+        document.getElementById('gameModal').addEventListener('click', (e) => {
+            if (e.target.id === 'gameModal') {
+                closeGame();
+            }
+        });
+    </script>
+</body>
+</html>

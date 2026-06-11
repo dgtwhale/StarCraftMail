@@ -1,0 +1,15 @@
+# Локальные заметки и доки с реальными доступами — не публиковать
+CLAUDE.md
+CHANGELOG.md
+MAIL_API_README.md
+MAIL_API_STATUS.md
+MAIL_SETUP.md
+DEPLOY_MAIL_API.md
+
+# Секреты и бэкапы
+.env
+.env.*
+*.key
+*.pem
+*.bak*
+secrets/

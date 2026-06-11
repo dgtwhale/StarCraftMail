@@ -1,0 +1,1081 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StarCraft Mail - WebMail</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Press Start 2P', cursive;
+            background: #000;
+            color: #FFD700;
+            min-height: 100vh;
+            background-image:
+                linear-gradient(45deg, #1a1a1a 25%, transparent 25%),
+                linear-gradient(-45deg, #1a1a1a 25%, transparent 25%),
+                linear-gradient(45deg, transparent 75%, #1a1a1a 75%),
+                linear-gradient(-45deg, transparent 75%, #1a1a1a 75%);
+            background-size: 20px 20px;
+            background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+            padding: 20px;
+        }
+
+        .scan-lines {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            background: repeating-linear-gradient(
+                0deg,
+                rgba(0, 0, 0, 0.15),
+                rgba(0, 0, 0, 0.15) 1px,
+                transparent 1px,
+                transparent 2px
+            );
+            animation: flicker 0.15s infinite;
+            z-index: 999;
+        }
+
+        @keyframes flicker {
+            0% { opacity: 0.95; }
+            50% { opacity: 1; }
+            100% { opacity: 0.95; }
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header {
+            background: #000;
+            border: 4px solid #FFD700;
+            padding: 20px;
+            margin-bottom: 20px;
+            text-align: center;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+        }
+
+        .header h1 {
+            font-size: 20px;
+            text-shadow: 0 0 10px #FFD700;
+            margin-bottom: 5px;
+        }
+
+        .header-info {
+            font-size: 8px;
+            color: #FFA500;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        button {
+            padding: 8px 12px;
+            background: #FFD700;
+            border: 2px solid #FFD700;
+            color: #000;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 8px;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+            transition: all 0.2s;
+        }
+
+        button:hover {
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.8);
+        }
+
+        .btn-logout {
+            background: #FF4444;
+            border-color: #FF4444;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 900px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .panel {
+            border: 3px solid #FFD700;
+            background: #000;
+            padding: 15px;
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
+        }
+
+        .panel h2 {
+            font-size: 10px;
+            margin-bottom: 15px;
+            color: #FFA500;
+            text-shadow: 0 0 5px rgba(255, 165, 0, 0.7);
+            padding-bottom: 10px;
+            border-bottom: 2px solid #FFD700;
+        }
+
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .sidebar-btn {
+            padding: 10px;
+            background: #001a00;
+            border: 2px solid #FFD700;
+            color: #FFD700;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 8px;
+            cursor: pointer;
+            text-align: left;
+            box-shadow: 0 0 5px rgba(255, 215, 0, 0.2);
+        }
+
+        .sidebar-btn.active {
+            background: #FFD700;
+            color: #000;
+        }
+
+        .sidebar-btn:hover {
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+        }
+
+        .email-list {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .email-item {
+            background: #001a00;
+            border: 2px solid #FFD700;
+            padding: 10px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            font-size: 8px;
+            box-shadow: 0 0 5px rgba(255, 215, 0, 0.2);
+            transition: all 0.2s;
+        }
+
+        .email-item:hover {
+            background: #003300;
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.4);
+        }
+
+        .email-item.active {
+            background: #FFD700;
+            color: #000;
+        }
+
+        .email-from {
+            color: #00FF00;
+            font-weight: bold;
+        }
+
+        .email-subject {
+            margin-top: 5px;
+            color: #FFD700;
+        }
+
+        .email-date {
+            margin-top: 5px;
+            color: #FFA500;
+            font-size: 7px;
+        }
+
+        .content-area {
+            display: none;
+        }
+
+        .content-area.active {
+            display: block;
+        }
+
+        .message-view {
+            background: #001a00;
+            border: 2px solid #FFD700;
+            padding: 15px;
+            color: #00FF00;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .message-header {
+            border-bottom: 2px solid #FFD700;
+            padding-bottom: 10px;
+            margin-bottom: 10px;
+            color: #FFD700;
+        }
+
+        .message-field {
+            margin-bottom: 8px;
+            font-size: 8px;
+        }
+
+        .message-body {
+            margin-top: 15px;
+            white-space: pre-wrap;
+            word-break: break-word;
+            font-size: 8px;
+            line-height: 1.4;
+        }
+
+        .compose-form {
+            display: none;
+        }
+
+        .compose-form.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            font-size: 8px;
+            margin-bottom: 5px;
+            color: #FFA500;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        textarea {
+            width: 100%;
+            padding: 8px;
+            background: #001a00;
+            border: 2px solid #FFD700;
+            color: #FFD700;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 8px;
+            box-sizing: border-box;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 200px;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 10px;
+            background: #FFD700;
+            border: 2px solid #FFD700;
+            color: #000;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 10px;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #FFA500;
+        }
+
+        .alert {
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 2px solid;
+            font-size: 8px;
+        }
+
+        .alert-success {
+            background: #001a00;
+            border-color: #00FF00;
+            color: #00FF00;
+        }
+
+        .alert-error {
+            background: #1a0000;
+            border-color: #FF0000;
+            color: #FF4444;
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #001a00;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #FFD700;
+        }
+
+        #gameCanvas {
+            background: #000;
+            border: 3px solid #FFD700;
+            margin: 15px 0;
+            display: block;
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
+            max-width: 100%;
+            height: auto;
+        }
+
+        @media (max-width: 600px) {
+            #gameCanvas {
+                width: 100%;
+                height: 300px;
+            }
+
+            .game-instructions {
+                font-size: 6px !important;
+            }
+
+            .game-info {
+                font-size: 7px !important;
+            }
+        }
+
+        .game-controls {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .game-controls > div {
+            display: flex;
+            gap: 5px;
+            justify-content: center;
+        }
+
+        .control-btn {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(180deg, #FFD700, #FFA500);
+            border: 2px solid #FFD700;
+            color: #000;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: all 0.1s;
+            box-shadow: 0 4px 0 #665a00;
+        }
+
+        .control-btn:active {
+            transform: translateY(3px);
+            box-shadow: 0 1px 0 #665a00;
+        }
+
+        @media (max-width: 600px) {
+            .control-btn {
+                width: 40px;
+                height: 40px;
+                font-size: 12px;
+            }
+        }
+
+        .game-info {
+            display: flex;
+            justify-content: space-between;
+            margin: 10px 0;
+            font-size: 8px;
+            color: #FFD700;
+        }
+
+        .game-instructions {
+            font-size: 7px;
+            color: #FFA500;
+            margin: 10px 0;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+    <div class="scan-lines"></div>
+
+    <div class="container">
+        <div class="header">
+            <h1>📧 STARCRAFT WEBMAIL 📧</h1>
+            <div class="header-info" id="emailDisplay"></div>
+        </div>
+
+        <div class="controls">
+            <button onclick="showInbox()">📬 INBOX</button>
+            <button onclick="showCompose()">✍️ COMPOSE</button>
+            <button onclick="showGame()">🎮 GAME</button>
+            <button class="btn-logout" onclick="logout()">🚪 LOGOUT</button>
+        </div>
+
+        <div id="alerts"></div>
+
+        <div class="grid">
+            <div class="panel">
+                <h2>📂 FOLDERS</h2>
+                <div class="sidebar">
+                    <button class="sidebar-btn active" onclick="showInbox()">INBOX</button>
+                    <button class="sidebar-btn" onclick="showCompose()">COMPOSE</button>
+                    <button class="sidebar-btn" onclick="showGame()">GAME</button>
+                </div>
+            </div>
+
+            <div class="panel">
+                <!-- Inbox View -->
+                <div id="inboxView" class="content-area active">
+                    <h2>📬 INBOX</h2>
+                    <div id="emailList" class="email-list">
+                        <div class="loading">⏳ LOADING EMAILS...</div>
+                    </div>
+                </div>
+
+                <!-- Message View -->
+                <div id="messageView" class="content-area">
+                    <h2 id="messageViewTitle">📧 MESSAGE</h2>
+                    <button onclick="backToInbox()" style="width: 100%; margin-bottom: 10px;">◀ BACK</button>
+                    <div id="messageContent" class="message-view">
+                        <div class="loading">⏳ LOADING MESSAGE...</div>
+                    </div>
+                </div>
+
+                <!-- Compose View -->
+                <div id="composeView" class="content-area">
+                    <h2>✍️ COMPOSE</h2>
+                    <form id="composeForm">
+                        <div class="form-group">
+                            <label>TO:</label>
+                            <input type="email" id="composeTO" required>
+                        </div>
+                        <div class="form-group">
+                            <label>SUBJECT:</label>
+                            <input type="text" id="composeSubject" required>
+                        </div>
+                        <div class="form-group">
+                            <label>MESSAGE:</label>
+                            <textarea id="composeBody" required></textarea>
+                        </div>
+                        <button type="submit" class="submit-btn">📤 SEND</button>
+                    </form>
+                </div>
+
+                <!-- Game View -->
+                <div id="gameView" class="content-area">
+                    <h2>🎮 ZERG vs PROTOSS PACMAN</h2>
+                    <div class="game-info">
+                        <span>Score: <span id="gameScore">0</span></span>
+                        <span id="gameStatus">Use arrow keys to move</span>
+                    </div>
+                    <div class="game-instructions">
+                        🟣 = ZERG (YOU)<br>
+                        🟠 = PROTOSS (ENEMY)<br>
+                        🟡 = TERRAN UNITS (EAT THEM)<br>
+                        Eat all units and avoid Protoss!
+                    </div>
+                    <canvas id="gameCanvas" width="400" height="400"></canvas>
+                    <div class="game-controls">
+                        <button id="btnUp" class="control-btn control-btn-up">▲</button>
+                        <div>
+                            <button id="btnLeft" class="control-btn control-btn-left">◀</button>
+                            <button id="btnDown" class="control-btn control-btn-down">▼</button>
+                            <button id="btnRight" class="control-btn control-btn-right">▶</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const email = '{{ email }}';
+
+        function showAlert(message, type) {
+            const alerts = document.getElementById('alerts');
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type}`;
+            alert.textContent = message;
+            alerts.appendChild(alert);
+
+            setTimeout(() => alert.remove(), 4000);
+        }
+
+        function showView(viewId) {
+            document.querySelectorAll('.content-area').forEach(v => v.classList.remove('active'));
+            document.getElementById(viewId).classList.add('active');
+        }
+
+        function showInbox() {
+            showView('inboxView');
+            loadInbox();
+        }
+
+        function showCompose() {
+            showView('composeView');
+        }
+
+        function showGame() {
+            showView('gameView');
+            initGame();
+        }
+
+        async function loadInbox() {
+            try {
+                const response = await fetch('/api/mail/inbox');
+                const data = await response.json();
+
+                const list = document.getElementById('emailList');
+                if (!data.emails || data.emails.length === 0) {
+                    list.innerHTML = '<div class="loading">NO EMAILS</div>';
+                    return;
+                }
+
+                list.innerHTML = data.emails.map(email => `
+                    <div class="email-item" onclick="loadMessage('${email.id}')">
+                        <div class="email-from">📧 ${email.from.split('<')[0].trim()}</div>
+                        <div class="email-subject">${email.subject}</div>
+                        <div class="email-date">${new Date(email.date).toLocaleString()}</div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                document.getElementById('emailList').innerHTML = `<div class="loading">ERROR: ${error.message}</div>`;
+            }
+        }
+
+        async function loadMessage(msgId) {
+            showView('messageView');
+            try {
+                const response = await fetch(`/api/mail/message/${msgId}`);
+                const msg = await response.json();
+
+                const content = document.getElementById('messageContent');
+                content.innerHTML = `
+                    <div class="message-header">
+                        <div class="message-field"><strong>FROM:</strong> ${msg.from}</div>
+                        <div class="message-field"><strong>TO:</strong> ${msg.to}</div>
+                        <div class="message-field"><strong>SUBJECT:</strong> ${msg.subject}</div>
+                        <div class="message-field"><strong>DATE:</strong> ${msg.date}</div>
+                    </div>
+                    <div class="message-body">${msg.body}</div>
+                `;
+            } catch (error) {
+                document.getElementById('messageContent').innerHTML = `<div class="loading">ERROR: ${error.message}</div>`;
+            }
+        }
+
+        function backToInbox() {
+            showInbox();
+        }
+
+        document.getElementById('composeForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const to = document.getElementById('composeTO').value;
+            const subject = document.getElementById('composeSubject').value;
+            const body = document.getElementById('composeBody').value;
+
+            try {
+                const response = await fetch('/api/mail/send', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ to, subject, body })
+                });
+
+                if (response.ok) {
+                    showAlert('MESSAGE SENT!', 'success');
+                    document.getElementById('composeForm').reset();
+                    showInbox();
+                } else {
+                    const data = await response.json();
+                    showAlert(`ERROR: ${data.error}`, 'error');
+                }
+            } catch (error) {
+                showAlert(`ERROR: ${error.message}`, 'error');
+            }
+        });
+
+        function logout() {
+            if (confirm('LOGOUT FROM WEBMAIL?')) {
+                window.location.href = '/api/user/logout';
+            }
+        }
+
+        document.getElementById('emailDisplay').textContent = `LOGGED IN AS: ${email}`;
+        loadInbox();
+
+        // ========== GAME LOGIC ==========
+        let gameState = null;
+
+        // Функции рисования юнитов
+        function drawZerg(ctx, x, y, size) {
+            ctx.save();
+            ctx.translate(x + size/2, y + size/2);
+
+            // HYDRALISK-подобный монстр
+            ctx.fillStyle = '#00FF00';
+
+            // Туловище - длинное, червообразное
+            ctx.beginPath();
+            ctx.ellipse(0, size*0.05, size*0.25, size*0.35, 0, 0, Math.PI*2);
+            ctx.fill();
+
+            // Голова - заостренная
+            ctx.beginPath();
+            ctx.moveTo(0, -size*0.4);
+            ctx.lineTo(size*0.2, -size*0.15);
+            ctx.lineTo(-size*0.2, -size*0.15);
+            ctx.closePath();
+            ctx.fill();
+
+            // Челюсти - две острые части
+            ctx.fillStyle = '#FF0000';
+            ctx.beginPath();
+            ctx.moveTo(-size*0.1, -size*0.2);
+            ctx.lineTo(-size*0.15, -size*0.25);
+            ctx.lineTo(-size*0.12, -size*0.18);
+            ctx.closePath();
+            ctx.fill();
+
+            ctx.beginPath();
+            ctx.moveTo(size*0.1, -size*0.2);
+            ctx.lineTo(size*0.15, -size*0.25);
+            ctx.lineTo(size*0.12, -size*0.18);
+            ctx.closePath();
+            ctx.fill();
+
+            // Глаза - светящиеся
+            ctx.fillStyle = '#00FFFF';
+            ctx.beginPath();
+            ctx.arc(-size*0.07, -size*0.28, size*0.06, 0, Math.PI*2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(size*0.07, -size*0.28, size*0.06, 0, Math.PI*2);
+            ctx.fill();
+
+            // Шипы на спине
+            ctx.strokeStyle = '#FF0000';
+            ctx.lineWidth = 1.5;
+            for(let i = -1; i <= 1; i++) {
+                ctx.beginPath();
+                ctx.moveTo(i*size*0.15, -size*0.1);
+                ctx.lineTo(i*size*0.15, -size*0.25);
+                ctx.stroke();
+            }
+
+            // Когти - длинные
+            ctx.strokeStyle = '#FF0000';
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.moveTo(-size*0.2, size*0.25);
+            ctx.lineTo(-size*0.3, size*0.35);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(size*0.2, size*0.25);
+            ctx.lineTo(size*0.3, size*0.35);
+            ctx.stroke();
+
+            ctx.restore();
+        }
+
+        function drawProtoss(ctx, x, y, size) {
+            ctx.save();
+            ctx.translate(x + size/2, y + size/2);
+
+            // ZEALOT-подобный воин - технологичный силуэт
+            ctx.fillStyle = '#FF6600';
+
+            // Голова - треугольная, острая
+            ctx.beginPath();
+            ctx.moveTo(0, -size*0.38);
+            ctx.lineTo(size*0.15, -size*0.18);
+            ctx.lineTo(-size*0.15, -size*0.18);
+            ctx.closePath();
+            ctx.fill();
+
+            // Плечи - широкие, геометричные
+            ctx.beginPath();
+            ctx.moveTo(-size*0.25, -size*0.1);
+            ctx.lineTo(-size*0.3, size*0.05);
+            ctx.lineTo(-size*0.15, size*0.1);
+            ctx.closePath();
+            ctx.fill();
+
+            ctx.beginPath();
+            ctx.moveTo(size*0.25, -size*0.1);
+            ctx.lineTo(size*0.3, size*0.05);
+            ctx.lineTo(size*0.15, size*0.1);
+            ctx.closePath();
+            ctx.fill();
+
+            // Туловище - центральная часть
+            ctx.beginPath();
+            ctx.rect(-size*0.15, -size*0.1, size*0.3, size*0.35);
+            ctx.fill();
+
+            // Энергокристалл в центре
+            ctx.fillStyle = '#FFFF00';
+            ctx.beginPath();
+            ctx.moveTo(0, -size*0.05);
+            ctx.lineTo(size*0.1, size*0.05);
+            ctx.lineTo(0, size*0.15);
+            ctx.lineTo(-size*0.1, size*0.05);
+            ctx.closePath();
+            ctx.fill();
+
+            // Плазменный луч (оружие)
+            ctx.strokeStyle = '#FF00FF';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(size*0.15, -size*0.05);
+            ctx.lineTo(size*0.35, -size*0.15);
+            ctx.stroke();
+
+            // Ноги - острые, геометричные
+            ctx.fillStyle = '#FF6600';
+            ctx.beginPath();
+            ctx.moveTo(-size*0.1, size*0.25);
+            ctx.lineTo(-size*0.15, size*0.4);
+            ctx.lineTo(-size*0.05, size*0.35);
+            ctx.closePath();
+            ctx.fill();
+
+            ctx.beginPath();
+            ctx.moveTo(size*0.1, size*0.25);
+            ctx.lineTo(size*0.15, size*0.4);
+            ctx.lineTo(size*0.05, size*0.35);
+            ctx.closePath();
+            ctx.fill();
+
+            ctx.restore();
+        }
+
+        function drawTerran(ctx, x, y, size) {
+            ctx.save();
+            ctx.translate(x + size/2, y + size/2);
+
+            // MARINE - боевой солдат
+            ctx.fillStyle = '#FFFF00';
+
+            // Голова в шлеме
+            ctx.beginPath();
+            ctx.arc(0, -size*0.28, size*0.13, 0, Math.PI*2);
+            ctx.fill();
+
+            // Стекло шлема
+            ctx.fillStyle = '#00AAFF';
+            ctx.beginPath();
+            ctx.arc(0, -size*0.28, size*0.08, 0, Math.PI*2);
+            ctx.fill();
+
+            // Туловище - броня
+            ctx.fillStyle = '#FFFF00';
+            ctx.beginPath();
+            ctx.rect(-size*0.14, -size*0.15, size*0.28, size*0.3);
+            ctx.fill();
+
+            // Линии брони
+            ctx.strokeStyle = '#FFA500';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(-size*0.14, size*0.0);
+            ctx.lineTo(size*0.14, size*0.0);
+            ctx.stroke();
+
+            // Боевой ранец/спина
+            ctx.fillStyle = '#FFFF00';
+            ctx.beginPath();
+            ctx.rect(size*0.08, -size*0.1, size*0.1, size*0.2);
+            ctx.fill();
+
+            // Руки в броне
+            ctx.beginPath();
+            ctx.rect(-size*0.2, -size*0.08, size*0.06, size*0.25);
+            ctx.fill();
+
+            ctx.beginPath();
+            ctx.rect(size*0.14, -size*0.08, size*0.06, size*0.25);
+            ctx.fill();
+
+            // Оружие - винтовка в руке
+            ctx.strokeStyle = '#FF0000';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(size*0.14, size*0.05);
+            ctx.lineTo(size*0.3, -size*0.1);
+            ctx.stroke();
+
+            // Дуло оружия
+            ctx.fillStyle = '#FF0000';
+            ctx.beginPath();
+            ctx.rect(size*0.28, -size*0.12, size*0.06, size*0.04);
+            ctx.fill();
+
+            // Ноги
+            ctx.fillStyle = '#FFFF00';
+            ctx.fillRect(-size*0.08, size*0.15, size*0.06, size*0.22);
+            ctx.fillRect(size*0.02, size*0.15, size*0.06, size*0.22);
+
+            // Сапоги
+            ctx.fillStyle = '#666666';
+            ctx.fillRect(-size*0.08, size*0.34, size*0.06, size*0.04);
+            ctx.fillRect(size*0.02, size*0.34, size*0.06, size*0.04);
+
+            ctx.restore();
+        }
+
+        function drawObstacle(ctx, x, y, size) {
+            ctx.save();
+            ctx.translate(x + size/2, y + size/2);
+
+            // Металлическая стена корабля
+            ctx.fillStyle = '#2A4F6A';
+            ctx.fillRect(-size/2, -size/2, size, size);
+
+            // Окантовка стены
+            ctx.strokeStyle = '#00FFFF';
+            ctx.lineWidth = 1;
+            ctx.strokeRect(-size/2, -size/2, size, size);
+
+            // Детали - панели и линии энергии
+            ctx.strokeStyle = '#00FFFF';
+            ctx.lineWidth = 0.5;
+            ctx.beginPath();
+            ctx.moveTo(-size/2 + 2, -size/2 + 4);
+            ctx.lineTo(size/2 - 2, -size/2 + 4);
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.moveTo(-size/2 + 2, size/2 - 4);
+            ctx.lineTo(size/2 - 2, size/2 - 4);
+            ctx.stroke();
+
+            // Светящиеся точки (энергетические точки)
+            ctx.fillStyle = '#00FF00';
+            ctx.beginPath();
+            ctx.arc(-size/4, 0, 1.5, 0, Math.PI*2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(size/4, 0, 1.5, 0, Math.PI*2);
+            ctx.fill();
+
+            ctx.restore();
+        }
+
+        class PacmanGame {
+            constructor(canvas) {
+                this.canvas = canvas;
+                this.ctx = canvas.getContext('2d');
+
+                const maxWidth = Math.min(400, window.innerWidth - 60);
+                const maxHeight = 300;
+                canvas.width = maxWidth;
+                canvas.height = maxHeight;
+
+                this.cols = 12;
+                this.rows = 10;
+                this.gridSize = Math.floor(canvas.width / this.cols);
+
+                this.zerg = { x: 1, y: 1, dx: 0, dy: 0 };
+                this.protoss = { x: this.cols - 2, y: this.rows - 2, dx: 0, dy: 0 };
+                this.pellets = [];
+                this.obstacles = [];
+                this.score = 0;
+                this.gameOver = false;
+                this.won = false;
+
+                this.generateObstacles();
+                this.generatePellets();
+                this.setupControls();
+                this.gameLoop();
+            }
+
+            generateObstacles() {
+                // Стены корабля - создаем лабиринт
+                const walls = [
+                    // Верхние и нижние стены
+                    ...Array.from({length: this.cols}, (_, i) => ({x: i, y: 0})),
+                    ...Array.from({length: this.cols}, (_, i) => ({x: i, y: this.rows - 1})),
+                    // Левые и правые стены
+                    ...Array.from({length: this.rows}, (_, i) => ({x: 0, y: i})),
+                    ...Array.from({length: this.rows}, (_, i) => ({x: this.cols - 1, y: i})),
+                    // Внутренние стены - коридоры корабля
+                    {x: 3, y: 3}, {x: 3, y: 4}, {x: 3, y: 5}, {x: 3, y: 6},
+                    {x: 6, y: 2}, {x: 6, y: 3}, {x: 6, y: 4}, {x: 6, y: 5}, {x: 6, y: 6}, {x: 6, y: 7},
+                    {x: 9, y: 3}, {x: 9, y: 4}, {x: 9, y: 5}, {x: 9, y: 6},
+                    {x: 4, y: 8}, {x: 5, y: 8}, {x: 6, y: 8}, {x: 7, y: 8}, {x: 8, y: 8},
+                ];
+
+                this.obstacles = walls.filter(w =>
+                    !(w.x === this.zerg.x && w.y === this.zerg.y) &&
+                    !(w.x === this.protoss.x && w.y === this.protoss.y)
+                );
+            }
+
+            generatePellets() {
+                for (let y = 0; y < this.rows; y++) {
+                    for (let x = 0; x < this.cols; x++) {
+                        if ((x !== this.zerg.x || y !== this.zerg.y) &&
+                            (x !== this.protoss.x || y !== this.protoss.y) &&
+                            Math.random() > 0.7) {
+                            this.pellets.push({ x, y });
+                        }
+                    }
+                }
+            }
+
+            setupControls() {
+                document.addEventListener('keydown', (e) => {
+                    switch(e.key) {
+                        case 'ArrowUp':
+                            if (this.zerg.dy === 0) { this.zerg.dx = 0; this.zerg.dy = -1; }
+                            e.preventDefault();
+                            break;
+                        case 'ArrowDown':
+                            if (this.zerg.dy === 0) { this.zerg.dx = 0; this.zerg.dy = 1; }
+                            e.preventDefault();
+                            break;
+                        case 'ArrowLeft':
+                            if (this.zerg.dx === 0) { this.zerg.dx = -1; this.zerg.dy = 0; }
+                            e.preventDefault();
+                            break;
+                        case 'ArrowRight':
+                            if (this.zerg.dx === 0) { this.zerg.dx = 1; this.zerg.dy = 0; }
+                            e.preventDefault();
+                            break;
+                    }
+                });
+
+                const moveZerg = (dx, dy) => {
+                    if ((dx !== 0 && this.zerg.dx === 0) || (dy !== 0 && this.zerg.dy === 0)) {
+                        this.zerg.dx = dx;
+                        this.zerg.dy = dy;
+                    }
+                };
+
+                document.getElementById('btnUp')?.addEventListener('click', () => moveZerg(0, -1));
+                document.getElementById('btnDown')?.addEventListener('click', () => moveZerg(0, 1));
+                document.getElementById('btnLeft')?.addEventListener('click', () => moveZerg(-1, 0));
+                document.getElementById('btnRight')?.addEventListener('click', () => moveZerg(1, 0));
+            }
+
+            isObstacle(x, y) {
+                return this.obstacles.some(obs => obs.x === x && obs.y === y);
+            }
+
+            update() {
+                if (this.gameOver || this.won) return;
+
+                const nextX = this.zerg.x + this.zerg.dx;
+                const nextY = this.zerg.y + this.zerg.dy;
+
+                // Проверяем столкновение со стенами
+                if (!this.isObstacle(nextX, nextY)) {
+                    this.zerg.x = nextX;
+                    this.zerg.y = nextY;
+                }
+
+                if (this.zerg.x < 0) this.zerg.x = this.cols - 1;
+                if (this.zerg.x >= this.cols) this.zerg.x = 0;
+                if (this.zerg.y < 0) this.zerg.y = this.rows - 1;
+                if (this.zerg.y >= this.rows) this.zerg.y = 0;
+
+                this.pellets = this.pellets.filter(p => {
+                    if (p.x === this.zerg.x && p.y === this.zerg.y) {
+                        this.score += 10;
+                        return false;
+                    }
+                    return true;
+                });
+
+                const dx = this.zerg.x - this.protoss.x;
+                const dy = this.zerg.y - this.protoss.y;
+                if (Math.abs(dx) + Math.abs(dy) > 0) {
+                    this.protoss.dx = dx > 0 ? 1 : dx < 0 ? -1 : 0;
+                    this.protoss.dy = dy > 0 ? 1 : dy < 0 ? -1 : 0;
+                }
+
+                // Движение Протоса с учетом препятствий
+                const nextProtossX = this.protoss.x + this.protoss.dx;
+                const nextProtossY = this.protoss.y + this.protoss.dy;
+
+                if (!this.isObstacle(nextProtossX, nextProtossY)) {
+                    this.protoss.x = nextProtossX;
+                    this.protoss.y = nextProtossY;
+                }
+
+                if (this.protoss.x < 0) this.protoss.x = this.cols - 1;
+                if (this.protoss.x >= this.cols) this.protoss.x = 0;
+                if (this.protoss.y < 0) this.protoss.y = this.rows - 1;
+                if (this.protoss.y >= this.rows) this.protoss.y = 0;
+
+                if (this.zerg.x === this.protoss.x && this.zerg.y === this.protoss.y) {
+                    this.gameOver = true;
+                    document.getElementById('gameStatus').textContent = '💀 GAME OVER! PROTOSS CAUGHT YOU!';
+                }
+
+                if (this.pellets.length === 0) {
+                    this.won = true;
+                    document.getElementById('gameStatus').textContent = `🎉 YOU WON! FINAL SCORE: ${this.score}`;
+                }
+            }
+
+            draw() {
+                this.ctx.fillStyle = '#000';
+                this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
+                // Рисуем препятствия - стены корабля
+                this.obstacles.forEach(obs => {
+                    drawObstacle(this.ctx, obs.x * this.gridSize + 2, obs.y * this.gridSize + 2, this.gridSize - 4);
+                });
+
+                // Рисуем пеллеты - звездочки Терран
+                this.pellets.forEach(p => {
+                    drawTerran(this.ctx, p.x * this.gridSize + 2, p.y * this.gridSize + 2, this.gridSize - 4);
+                });
+
+                // Рисуем Зерга
+                drawZerg(this.ctx, this.zerg.x * this.gridSize + 2, this.zerg.y * this.gridSize + 2, this.gridSize - 4);
+
+                // Рисуем Протоса
+                drawProtoss(this.ctx, this.protoss.x * this.gridSize + 2, this.protoss.y * this.gridSize + 2, this.gridSize - 4);
+
+                document.getElementById('gameScore').textContent = this.score;
+            }
+
+            gameLoop() {
+                this.update();
+                this.draw();
+                if (!this.gameOver && !this.won) {
+                    setTimeout(() => this.gameLoop(), 100);
+                }
+            }
+        }
+
+        let game = null;
+
+        function initGame() {
+            const canvas = document.getElementById('gameCanvas');
+            if (game === null) {
+                game = new PacmanGame(canvas);
+            }
+        }
+    </script>
+</body>
+</html>
